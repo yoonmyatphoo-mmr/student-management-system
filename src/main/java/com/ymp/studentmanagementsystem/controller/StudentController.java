@@ -1,16 +1,15 @@
 package com.ymp.studentmanagementsystem.controller;
 
-import com.ymp.studentmanagementsystem.model.Student;
+import com.ymp.studentmanagementsystem.model.entity.Student;
+import com.ymp.studentmanagementsystem.model.response.StudentResponse;
+import com.ymp.studentmanagementsystem.model.status.Status;
 import com.ymp.studentmanagementsystem.service.StudentService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -27,82 +26,124 @@ public class StudentController {
 
     Logger logger = LogManager.getLogger(StudentController.class);
 
-    /**
-     * save student info into database
-     */
-    @PostMapping("/saveStudent")
-    public ResponseEntity saveStudent(@RequestBody Student student) {
-        logger.info("student: " + student);
-        studentService.saveStudent(student);
-        return new ResponseEntity("success", HttpStatus.OK);
-    }
-
 
     /**
-     * use findAll() method
+     * findAll student filter by deleted
      */
-    @GetMapping("/getAllStudent")
-    public ResponseEntity getAllStudent() {
-        List<Student> studentList = studentService.getAllStudentList();
-        Student s = new Student();
-        s.setName("Yee Yee");
-        s.setId(4L);
-        s.setAddress("NayPyiTaw");
-        s.setMajor("CT");
-        s.setYear("Third Year");
-        studentList.add(s);
-
-        return new ResponseEntity(studentList, HttpStatus.OK);
-    }
-
-    /**
-     * use query and ifDelete method
-     */
-    @GetMapping("/selectAll")
+    @GetMapping("/findAllStudent")
     public ResponseEntity selectAll() {
-        List<Student> studentList = studentService.selectAll();
-        return new ResponseEntity(studentList, HttpStatus.OK);
+        StudentResponse response = new StudentResponse();
+        try {
+            List<Student> studentList = studentService.selectAll();
+            response.setStatus(Status.Success.toString());
+            response.setData(studentList);
+
+            logger.info("Response: {}", response);
+
+            return new ResponseEntity(response, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus(Status.Fail.toString());
+            response.setMessage(e.getMessage());
+            logger.warn("Response: {}", response);
+        }
+        return new ResponseEntity(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     /**
-     * use query and ifDelete method
+     * find student by id
      */
-    @GetMapping("/findById")
+    @GetMapping("/findStudentById")
     public ResponseEntity getStudentById(Long id) {
-        logger.info(id);
-        Student stu = studentService.findById(id);
-        logger.info("stu: " + stu);
-        return new ResponseEntity(stu, HttpStatus.OK);
+        logger.info("Request ID: " + id);
+        StudentResponse response = new StudentResponse();
+        try {
+            Student stu = studentService.findById(id);
+            response.setStatus(Status.Success.toString());
+            response.setData(stu);
+
+            logger.info("Response: {}", response);
+
+            return new ResponseEntity(response, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus(Status.Fail.toString());
+            response.setMessage(e.getMessage());
+            logger.warn("Response: {}", response);
+        }
+        return new ResponseEntity(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @PostMapping("/insertStu")
+    /**
+     * f
+     * store student info into database.
+     */
+    @PostMapping("/insertStudent")
     public ResponseEntity insertStudent(@RequestBody Student student) {
+        StudentResponse response = new StudentResponse();
         try {
-            logger.info(student);
+            logger.info("Request: " + student);
             studentService.insertStu(student);
-            return new ResponseEntity(studentService, HttpStatus.OK);
+
+            response.setStatus(Status.Success.toString());
+            logger.info("Response: {}", response);
+            return new ResponseEntity(response, HttpStatus.OK);
         } catch (Exception e) {
             logger.error(student);
             e.printStackTrace();
+            response.setStatus(Status.Fail.toString());
+            response.setMessage(e.getMessage());
         }
-
-        return new ResponseEntity("fail", HttpStatus.BAD_REQUEST);
-
+        logger.info("Response: {}", response);
+        return new ResponseEntity(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @GetMapping("/updateById")
+    /**
+     * modify student by id
+     */
+    @PostMapping("/updateStudentById")
     public ResponseEntity updateStudentById(@RequestBody Student student) {
 
-        logger.info(student);
-        studentService.updateById(student);
-        return new ResponseEntity("Success", HttpStatus.OK);
+        logger.info("Request: " + student);
+
+        StudentResponse response = new StudentResponse();
+        try {
+            response = studentService.updateById(student);
+            logger.info("Response: {}", response);
+            return new ResponseEntity(response, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus(Status.Fail.toString());
+            response.setMessage(e.getMessage());
+            logger.info("Response: {}", response);
+            return new ResponseEntity(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 
     }
 
-    @GetMapping("/delete")
-    public ResponseEntity delete(Long id) {
-        studentService.delete(id);
-        return new ResponseEntity("delete", HttpStatus.OK);
+
+    /**
+     * delete student by id
+     */
+    @GetMapping("/deleteStudentById")
+    public ResponseEntity delete(@RequestParam long id) {
+
+
+        StudentResponse response = new StudentResponse();
+        try {
+            logger.info("request id: {}", id);
+            response = studentService.delete(id);
+            logger.info("Response: {}", response);
+            return new ResponseEntity(response, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus(Status.Fail.toString());
+            response.setMessage(e.getMessage());
+            logger.error("Response: {}", response);
+            return new ResponseEntity(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+
     }
 
 }

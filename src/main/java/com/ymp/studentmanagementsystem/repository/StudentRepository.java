@@ -1,12 +1,11 @@
 package com.ymp.studentmanagementsystem.repository;
 
-import com.ymp.studentmanagementsystem.model.Student;
+import com.ymp.studentmanagementsystem.model.entity.Student;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * @author Yoon Myat Phoo.
@@ -16,11 +15,10 @@ import java.util.Optional;
 
 public interface StudentRepository extends JpaRepository<Student, Long> {
 
-    @Query(nativeQuery = true, value = "select * from Student where delete=false ")
+    @Query(nativeQuery = true, value = "select * from Student where is_delete=false ")
     List<Student> selectAll();
 
-    @Query(nativeQuery = true, value = "select* from Student s where s.id = :na and delete = false ")
-    Optional<Student> findById(@Param("na") Long n);
+    @Query(nativeQuery = true, value = "select* from Student s where s.id = :id and is_delete = false ")
+    Student findStudentById(@Param("id") Long id);
 
-    void delete(boolean b);
 }
